@@ -89,7 +89,7 @@ export default function OverviewTech() {
                             {/* Pindah ke halaman detail */}
                             <button
                                 onClick={() => navigate(`/admin/overview/${s.id}`)}
-                                className="mt-3 px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 self-start"
+                                className="mt-3 px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 self-start transition"
                             >
                                 Lihat Detail
                             </button>

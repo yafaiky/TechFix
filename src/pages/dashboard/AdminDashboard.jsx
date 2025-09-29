@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../../layouts/AdminLayout";
 import Overview from "../admin/Overview";
 import Detail from "../admin/ServiceDetail";
-import ServicePage from "../admin/ServicePage"
+import ServicePage from "../dashboard/ServicePage"
 
 export default function AdminDashboard() {
     return (
