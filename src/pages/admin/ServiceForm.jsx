@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SignatureCanvas from "react-signature-canvas";
+import toast from "react-hot-toast";
 import api from "../../utils/api";
 
 export default function ServiceForm({ customerId }) {
@@ -14,7 +15,7 @@ export default function ServiceForm({ customerId }) {
   const sigCanvas = useRef(null);
   const navigate = useNavigate();
 
-  const base64ToBlob = (base64, mime) => {
+  const base64ToBlob = (base64, mime) => {  
     const byteString = atob(base64.split(",")[1]);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
@@ -28,7 +29,7 @@ export default function ServiceForm({ customerId }) {
     const files = Array.from(e.target.files);
     let newImages = [...images, ...files];
     if (newImages.length > 10) {
-      alert("Maksimal 10 gambar!");
+      toast.error("Maksimal 10 gambar!");
       newImages = newImages.slice(0, 10);
     }
     setImages(newImages);
@@ -55,9 +56,15 @@ export default function ServiceForm({ customerId }) {
         ...form,
         customerId,
       });
+
+      if (!serviceRes.data.id) {
+        toast.error("Response service tidak valid");
+        return;
+      }
+
       const serviceId = serviceRes.data.id;
 
-      // STEP 2: Upload media
+      // STEP 2: Upload media (jika ada)
       const formData = new FormData();
       formData.append("serviceId", serviceId);
 
@@ -73,14 +80,24 @@ export default function ServiceForm({ customerId }) {
         formData.append("signature", blob, "signature.png");
       }
 
-      await api.post("/api/media/admin", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      if (images.length > 0 || !sigCanvas.current.isEmpty()) {
+        await api.post("/api/media/admin", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("Media berhasil diupload!");
+      }
 
+      // STEP 3: Notifikasi sukses
+      toast.success("Service berhasil dibuat!");
+
+      // redirect ke dashboard admin
       navigate("/admin/overview", { replace: true });
-      alert("Service berhasil dibuat!");
+
     } catch (err) {
-      alert("Gagal membuat service: " + (err.response?.data?.error || err.message));
+      toast.error(
+        "Gagal membuat service: " +
+          (err.response?.data?.error || err.message)
+      );
     }
   };
 
