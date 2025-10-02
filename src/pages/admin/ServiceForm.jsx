@@ -84,17 +84,17 @@ export default function ServiceForm({ customerId }) {
         await api.post("/api/media/admin", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        toast.success("Media berhasil diupload!");
+        alert("Media berhasil diupload!");
       }
 
       // STEP 3: Notifikasi sukses
-      toast.success("Service berhasil dibuat!");
+      alert("Service berhasil dibuat!");
 
       // redirect ke dashboard admin
       navigate("/admin/overview", { replace: true });
 
     } catch (err) {
-      toast.error(
+      alert(
         "Gagal membuat service: " +
           (err.response?.data?.error || err.message)
       );

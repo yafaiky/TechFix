@@ -17,7 +17,7 @@ function StatusBadge({ status }) {
     );
 }
 
-export default function ServiceCard({ service, onView }) {
+export default function ServiceCard({ service, onView, onUpdate}) {
     return (
         <div className="bg-white border border-slate-100 rounded-lg shadow-sm p-4 flex flex-col justify-between hover:shadow-md transition">
             <div>
@@ -44,6 +44,14 @@ export default function ServiceCard({ service, onView }) {
                 >
                     View
                 </button>
+                
+                <button
+                    onClick={() => onUpdate(service.id)}
+                    className="text-xs px-3 py-1.5 rounded-md border border-slate-200 bg-white hover:bg-slate-50"
+                >
+                    Update
+                </button>
+
             </div>
         </div>
     );

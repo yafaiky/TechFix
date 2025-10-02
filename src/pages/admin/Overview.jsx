@@ -43,7 +43,7 @@ export default function OverviewTech() {
                         key={f}
                         onClick={() => setStatusFilter(f)}
                         className={`px-3 py-1 rounded-lg border text-sm ${statusFilter === f ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
-                            }`}
+                    }`}
                     >
                         {f}
                     </button>
@@ -64,7 +64,6 @@ export default function OverviewTech() {
                     className="w-full border pl-10 pr-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
             </div>
-
 
             {/* Content */}
             {loading ? (
@@ -87,12 +86,21 @@ export default function OverviewTech() {
                             </div>
 
                             {/* Pindah ke halaman detail */}
-                            <button
-                                onClick={() => navigate(`/admin/overview/${s.id}`)}
-                                className="mt-3 px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 self-start transition"
-                            >
-                                Lihat Detail
-                            </button>
+                            <div className="mt-3 flex justify-between items-center">
+                                <button
+                                    onClick={() => navigate(`/admin/overview/${s.id}`)}
+                                    className="px-3 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                                >
+                                    Lihat Detail
+                                </button>
+
+                                <button
+                                    onClick={() => navigate(`/admin/services/update/${s.id}`)}
+                                    className="px-3 py-1 text-sm rounded bg-green-600 text-white hover:bg-green-700 transition"
+                                >
+                                    Update Status
+                                </button>
+                            </div>
 
                         </div>
                     ))}
