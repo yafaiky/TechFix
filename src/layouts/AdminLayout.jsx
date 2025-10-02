@@ -70,7 +70,7 @@ export default function AdminLayout() {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
           >
             <LogOut size={16} /> Logout
           </button>
