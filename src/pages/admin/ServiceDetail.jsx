@@ -66,14 +66,14 @@ export default function ServiceDetail() {
         </div>
 
         <div className="bg-white shadow-md rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-3 border-b pb-2">Service Detail</h2>
-            <div className="space-y-1 text-sm text-gray-700">
-            <p><span className="font-medium text-gray-500">Penyebab:</span> {service.penyebab ?? "-"}</p>
-            <p><span className="font-medium text-gray-500">Kerusakan:</span> {service.kerusakan ?? "-"}</p>
-            <p><span className="font-medium text-gray-500">Penyelesaian:</span> {service.penyelesaian ?? "-"}</p>
-            <p><span className="font-medium text-gray-500">Part digunakan:</span> {service.partUsed ?? "-"}</p>
-            <p><span className="font-medium text-gray-500">Garansi:</span> {service.garansi ? new Date(service.garansi).toLocaleDateString("id-ID") : "-"}</p>
-            </div>
+          <h2 className="text-lg font-semibold mb-3 border-b pb-2">Service Update</h2>
+          <div className="space-y-1 text-sm text-gray-700">
+            <p><span className="font-medium text-gray-500">Penyebab:</span> {service.customer?.penyebab}</p>
+            <p><span className="font-medium text-gray-500">Kerusakan:</span> {service.customer?.kerusakan}</p>
+            <p><span className="font-medium text-gray-500">Penyelesaian:</span> {service.customer?.penyelesaian}</p>
+            <p><span className="font-medium text-gray-500">Part digunakan:</span> {service.customer?.partUsed}</p>
+            <p><span className="font-medium text-gray-500">Garansi:</span> {service.customer?.garansi}</p>
+          </div>
         </div>
 
 

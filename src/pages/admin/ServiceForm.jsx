@@ -90,6 +90,16 @@ export default function ServiceForm({ customerId }) {
       // STEP 3: Notifikasi sukses
       alert("Service berhasil dibuat!");
 
+      try {
+        await api.post("/api/pdf/send", {
+          serviceId,
+          type: "CREATE", // atau "UPDATE" / "INVOICE" sesuai kebutuhan
+        });
+        alert("PDF berhasil dibuat & dikirim ke WhatsApp!");
+      } catch (err) {
+        alert("Gagal generate PDF: " + (err.response?.data?.error || err.message));
+      }
+
       // redirect ke dashboard admin
       navigate("/admin/overview", { replace: true });
 
