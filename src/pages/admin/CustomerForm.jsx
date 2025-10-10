@@ -35,7 +35,7 @@ export default function CustomerForm({ onCreated }) {
             <input
                 type="text"
                 name="name"
-                placeholder="Nama Customer"
+                placeholder="Nama Customer :"
                 className="w-full border p-2 rounded"
                 required
                 onChange={handleChange}
@@ -44,7 +44,7 @@ export default function CustomerForm({ onCreated }) {
             <input
                 type="tel"
                 name="phone"
-                placeholder="No HP"
+                placeholder="No HP :"
                 className="w-full border p-2 rounded"
                 required
                 onChange={handleChange}
@@ -53,15 +53,15 @@ export default function CustomerForm({ onCreated }) {
             <input
                 type="email"
                 name="email"
-                placeholder="Email"
+                placeholder="Email :"
                 className="w-full border p-2 rounded"
-                required
+                // required
                 onChange={handleChange}
             />
 
             <textarea
                 name="address"
-                placeholder="Alamat"
+                placeholder="Alamat :"
                 className="w-full border p-2 rounded"
                 required
                 onChange={handleChange}

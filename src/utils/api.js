@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
   // withCredentials: true, // uncomment kalau server menggunakan cookie httpOnly
 });
 

@@ -6,93 +6,108 @@ import api from "../../utils/api";
 export default function ServiceUpdateForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [justSaved, setJustSaved] = useState(false); // ✅ status simpan baru
+  const [justSaved, setJustSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Status yang tidak boleh diupdate lagi
   const FINAL_STATUSES = ["DONE", "WARRANTY", "CANCELLED"];
 
-  // Final hanya berlaku kalau status sudah final & baru saja disimpan
-  const isFinal = !!form && FINAL_STATUSES.includes(form.serviceStatus) && justSaved;
-
+  // Ambil data service dari API
   useEffect(() => {
     async function fetchService() {
       try {
         const res = await api.get(`/api/services/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
+
+        const data = res.data.service || res.data; // handle kemungkinan nested response
+
         setForm({
-          penyebab: res.data.penyebab || "",
-          kerusakan: res.data.kerusakan || "",
-          penyelesaian: res.data.penyelesaian || "",
-          partUsed: res.data.partUsed || "",
-          garansi: res.data.garansi ? res.data.garansi.split("T")[0] : "",
-          serviceStatus: res.data.serviceStatus,
+          penyebab: data.penyebab || "",
+          kerusakan: data.kerusakan || "",
+          penyelesaian: data.penyelesaian || "",
+          partUsed: data.partUsed || "",
+          garansi: data.garansi ? data.garansi.split("T")[0] : "",
+          serviceStatus: data.serviceStatus || "OPEN",
         });
       } catch (err) {
-        alert("Gagal load data service");
+        alert("Gagal memuat data service");
         navigate("/admin/overview");
       } finally {
         setLoading(false);
       }
     }
+
     fetchService();
   }, [id, navigate]);
 
+  // Handle input
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
+  // Handle submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
 
-    if (FINAL_STATUSES.includes(form.serviceStatus)) {
+    setSaving(true);
+
+    const payload = { ...form };
+
+    // Ubah otomatis dari OPEN → PROGRESS
+    if (payload.serviceStatus === "OPEN") {
+      payload.serviceStatus = "PROGRESS";
+    }
+
+    // Konfirmasi jika status termasuk final
+    if (FINAL_STATUSES.includes(payload.serviceStatus)) {
       const confirmFinal = window.confirm(
-        `Status akan diubah menjadi ${form.serviceStatus}. Setelah ini service tidak bisa diupdate lagi. Lanjutkan?`
+        `Status akan diubah menjadi ${payload.serviceStatus}. Setelah ini service tidak bisa diupdate lagi. Lanjutkan?`
       );
       if (!confirmFinal) return;
     }
 
     try {
-      await api.patch(`/api/services/${id}`, form, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      console.log("🛰️ Data yang dikirim:", payload);
+
+      await api.patch(`/api/services/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
-      alert("Update berhasil");
-      // Tandai bahwa data baru saja disimpan
-      setJustSaved(true);
+
+      alert("Update berhasil ✅");
+
+      // Tandai jika status final
+      setJustSaved(FINAL_STATUSES.includes(payload.serviceStatus));
+
+      // Langsung kembali ke dashboard
+      navigate("/admin/overview");
     } catch (err) {
-      alert("Update gagal: " + err.response?.data?.error);
+      console.error("❌ Gagal update:", err);
+      alert("Update gagal: " + (err.response?.data?.error || err.message));
     }
   };
 
+  // Saat loading
   if (loading || !form) return <p className="p-4">Loading...</p>;
 
-  // 🚫 Jika status final dan sudah tersimpan → form tidak bisa diupdate lagi
-  if (isFinal) {
-    return (
-      <div className="p-6">
-        <button
-          onClick={() => navigate("/admin/overview")}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white rounded-lg text-sm font-medium transition"
-        >
-          <ArrowBigLeftDash size={16} />
-          Back
-        </button>
-        <div className="mt-6 p-6 bg-gray-100 border rounded">
-          <h2 className="text-xl font-bold">Service Tidak Bisa Diupdate</h2>
-          <p className="mt-2">
-            Status service saat ini adalah{" "}
-            <span className="font-semibold">{form.serviceStatus}</span>. Data
-            sudah final, tidak bisa diubah lagi.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+  // Form utama
   return (
-    <div className="p-2 md:p-6 space-y-5">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-5 bg-white p-5 rounded-xl shadow-md"
+      encType="multipart/form-data"
+    >
       <button
         onClick={() => navigate("/admin/overview")}
         className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white rounded-lg text-sm font-medium transition"
@@ -100,72 +115,154 @@ export default function ServiceUpdateForm() {
         <ArrowBigLeftDash size={16} />
         Back
       </button>
+      <h2 className="text-xl font-semibold text-gray-800">
+        🔧 Update Service
+      </h2>
 
-      <form onSubmit={handleSubmit} className="p-6 bg-white shadow-md rounded">
-        <h2 className="text-xl font-bold mb-4">Update Service</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Penyebab</label>
+          <input
+            type="text"
+            name="penyebab"
+            className="w-full border p-2 rounded"
+            placeholder="Masukkan penyebab"
+            onChange={handleChange}
+            value={form.penyebab}
+            required
+          />
+        </div>
 
-        <label>Penyebab:</label>
-        <input
-          name="penyebab"
-          value={form.penyebab}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Kerusakan</label>
+          <input
+            type="text"
+            name="kerusakan"
+            className="w-full border p-2 rounded"
+            placeholder="Masukkan kerusakan"
+            onChange={handleChange}
+            value={form.kerusakan}
+            required
+          />
+        </div>
 
-        <label>Kerusakan:</label>
-        <input
-          name="kerusakan"
-          value={form.kerusakan}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">
+            Penyelesaian
+          </label>
+          <textarea
+            name="penyelesaian"
+            rows="3"
+            className="w-full border p-2 rounded"
+            placeholder="Deskripsi penyelesaian"
+            value={form.penyelesaian}
+            onChange={handleChange}
+          />
+        </div>
 
-        <label>Penyelesaian:</label>
-        <input
-          name="penyelesaian"
-          value={form.penyelesaian}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Part Diganti</label>
+          <input
+            type="text"
+            name="partUsed"
+            className="w-full border p-2 rounded"
+            placeholder="Part yang digunakan"
+            value={form.partUsed}
+            onChange={handleChange}
+          />
+        </div>
 
-        <label>Part Used:</label>
-        <input
-          name="partUsed"
-          value={form.partUsed}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Garansi</label>
+          <input
+            type="date"
+            name="garansi"
+            className="w-full border p-2 rounded"
+            onChange={handleChange}
+          />
+        </div>
 
-        <label>Garansi:</label>
-        <input
-          type="date"
-          name="garansi"
-          value={form.garansi}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Status Service
+          </label>
+          <select
+            name="serviceStatus"
+            className="w-full border p-2 rounded"
+            value={form.serviceStatus}
+            onChange={handleChange}
+          >
+            <option value="OPEN">OPEN</option>
+            <option value="PROGRESS">PROGRESS</option>
+            <option value="SOLVED">SOLVED</option>
+            <option value="WARRANTY">WARRANTY</option>
+            <option value="DONE">DONE</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+      </div>
 
-        <label>Status:</label>
-        <select
-          name="serviceStatus"
-          value={form.serviceStatus}
-          onChange={handleChange}
-          className="border p-2 w-full"
-        >
-          <option>PROGRESS</option>
-          <option>SOLVED</option>
-          <option>WARRANTY</option>
-          <option>DONE</option>
-          <option>CANCELLED</option>
-        </select>
+      {/* 📸 Upload Foto */}
+      {/* <div>
+        <label className="block mb-1 font-medium">Upload Foto (Opsional)</label>
+        <div className="flex items-center gap-2 mb-3">
+          <label
+            htmlFor="file-upload"
+            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          >
+            Pilih Gambar
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <span className="text-sm text-gray-500">
+            {images.length}/10 gambar dipilih
+          </span>
+          {images.length > 0 && (
+            <button
+              type="button"
+              onClick={clearAllImages}
+              className="text-sm text-red-600 underline ml-2"
+            >
+              Hapus Semua
+            </button>
+          )}
+        </div>
 
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 mt-4 rounded"
-        >
-          Simpan
-        </button>
-      </form>
-    </div>
+        {images.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {images.map((file, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`preview-${index}`}
+                  className="w-full h-32 object-cover rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemove(index)}
+                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full px-2 py-0.5 text-xs opacity-80 hover:opacity-100"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div> */}
+
+      <button
+        type="submit"
+        disabled={saving}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md w-full"
+      >
+        {saving ? "Menyimpan..." : "Simpan Perubahan"}
+      </button>
+    </form>
   );
 }

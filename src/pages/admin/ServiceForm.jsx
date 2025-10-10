@@ -12,6 +12,7 @@ export default function ServiceForm({ customerId }) {
     Kondisi: "",
   });
   const [images, setImages] = useState([]);
+  const [saving, setSaving] = useState(false);
   const sigCanvas = useRef(null);
   const navigate = useNavigate();
 
@@ -50,6 +51,10 @@ export default function ServiceForm({ customerId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+
+    setSaving(true);
+
     try {
       // STEP 1: Buat service
       const serviceRes = await api.post("/api/services/admin", {
@@ -84,7 +89,6 @@ export default function ServiceForm({ customerId }) {
         await api.post("/api/media/admin", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Media berhasil diupload!");
       }
 
       // STEP 3: Notifikasi sukses
@@ -95,7 +99,7 @@ export default function ServiceForm({ customerId }) {
           serviceId,
           type: "CREATE", // atau "UPDATE" / "INVOICE" sesuai kebutuhan
         });
-        alert("PDF berhasil dibuat & dikirim ke WhatsApp!");
+        alert("berhasil dibuat & dikirim ke WhatsApp!");
       } catch (err) {
         alert("Gagal generate PDF: " + (err.response?.data?.error || err.message));
       }
@@ -123,16 +127,16 @@ export default function ServiceForm({ customerId }) {
         type="text"
         required
         name="Model"
-        placeholder="Model HP"
+        placeholder="Model Hardware :"
         className="w-full border p-2 rounded"
         onChange={handleChange}
       />
 
       <input
         type="text"
-        required
+        // required
         name="IMEI"
-        placeholder="IMEI"
+        placeholder="IMEI :"
         className="w-full border p-2 rounded"
         onChange={handleChange}
       />
@@ -141,7 +145,7 @@ export default function ServiceForm({ customerId }) {
         type="text"
         required
         name="Keluhan"
-        placeholder="Keluhan"
+        placeholder="Keluhan :"
         className="w-full border p-2 rounded"
         onChange={handleChange}
       />
@@ -149,7 +153,7 @@ export default function ServiceForm({ customerId }) {
       <textarea
         required
         name="Kondisi"
-        placeholder="Kondisi"
+        placeholder="Kondisi :"
         className="w-full border p-2 rounded"
         onChange={handleChange}
       />
@@ -220,9 +224,10 @@ export default function ServiceForm({ customerId }) {
 
       <button
         type="submit"
+        disabled={saving}
         className="bg-green-600 text-white px-4 py-2 rounded"
       >
-        Simpan Service
+        {saving ? "Menyimpan..." : "Simpan"}
       </button>
     </form>
   );

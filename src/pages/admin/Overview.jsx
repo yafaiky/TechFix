@@ -34,6 +34,15 @@ export default function OverviewTech() {
     return byStatus && bySearch;
   });
 
+  const statusColorMap = {
+    OPEN: "bg-blue-50 text-blue-700",
+    PROGRESS: "bg-yellow-50 text-yellow-700",
+    SOLVED: "bg-gray-100 text-gray-700",
+    WARRANTY: "bg-red-50 text-red-700",
+    DONE: "bg-green-50 text-green-700",
+    CANCELLED: "bg-gray-50 text-gray-500",
+  };
+
   return (
     <div className="p-4 md:p-6">
       <h1 className="text-xl md:text-2xl font-bold mb-4">Admin Dashboard</h1>
@@ -59,7 +68,6 @@ export default function OverviewTech() {
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           size={18}
         />
-
         <input
           type="text"
           placeholder="Cari customer..."
@@ -88,22 +96,21 @@ export default function OverviewTech() {
                 }`}
               >
                 <div>
-                  <p className="text-xs text-blue-800">
-                    ID : {s.customer?.memberID}
-                  </p>
-                  <h2 className="font-semibold text-base md:text-lg">
-                    {s.customer?.name}
-                  </h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs text-blue-800">ID : {s.customer?.memberID}</p>
+                  <h2 className="font-semibold text-base md:text-lg">{s.customer?.name}</h2>
+
+                  {/* 🟢 Status dengan warna sesuai map */}
+                  <p className="text-sm mt-1">
                     Status:{" "}
                     <span
-                      className={`font-semibold ${
-                        isFinal ? "text-gray-700" : "text-green-700"
+                      className={`px-2 py-1 rounded-md text-xs font-semibold ${
+                        statusColorMap[s.serviceStatus] || "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {s.serviceStatus}
                     </span>
                   </p>
+
                   <p className="text-sm">Phone : {s.customer?.phone}</p>
                   <p className="text-sm">Email: {s.customer?.email}</p>
                 </div>
@@ -116,7 +123,6 @@ export default function OverviewTech() {
                     Lihat Detail
                   </button>
 
-                  {/* ❌ Hanya tampilkan tombol Update jika belum final */}
                   {!isFinal && (
                     <button
                       onClick={() => navigate(`/admin/services/update/${s.id}`)}
